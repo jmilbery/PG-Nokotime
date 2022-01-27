@@ -4,7 +4,7 @@
 # version ='1.0'
 # Accepts a response block from a Noko Entries API call and processes the records for loading into DB tables.
 # ---------------------------------------------------------------------------
-import logging
+
 import requests
 
 """ Read the pg_noko.ini file"""
@@ -46,5 +46,5 @@ def process_response(response):
         if len(strOutline.strip()) > 0:
             strOutline = strOutline.replace('\r', '')
             strOutline = strOutline.replace('\n', '')
-            print (strOutline.upper())
+            #print (strOutline.upper())
         strOutline=""
