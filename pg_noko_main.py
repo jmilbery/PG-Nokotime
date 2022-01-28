@@ -6,7 +6,8 @@
 # ---------------------------------------------------------------------------
 
 import sys
-import pg_noko_api
+import pg_noko_api_entries
+import pg_noko_api_tags
 import pg_noko_db
 import pg_noko_logger
 import argparse
@@ -15,6 +16,7 @@ from configparser import ConfigParser
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--noko_entries', help='Fetch ENTRIES from Noko API and load them into PostgreSQL database',action="store_true")
+parser.add_argument('--noko_tags', help='Fetch TAGS from Noko API and load them into PostgreSQL database',action="store_true")
 parser.add_argument('--test_db_connection', help='Verify connection to PostgreSQL database',action="store_true")
 parser.add_argument('--drop_tables', help='Drop Tables in the PostgreSQL database',action="store_true")
 args = parser.parse_args()
@@ -34,7 +36,11 @@ except:
 
 if args.noko_entries:
     """ Get Entries """
-    pg_noko_api.get_entries(page_max,api_root,per_page,noko_token)
+    pg_noko_api_entries.get_entries(page_max,api_root,per_page,noko_token)
+
+if args.noko_tags:
+    """ Get Entries """
+    pg_noko_api_tags.get_tags(page_max,api_root,per_page,noko_token)
 
 if args.test_db_connection:
     """ Check DB connection """
