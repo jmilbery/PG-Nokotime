@@ -19,6 +19,7 @@ parser.add_argument('--noko_entries', help='Fetch ENTRIES from Noko API and load
 parser.add_argument('--noko_tags', help='Fetch TAGS from Noko API and load them into PostgreSQL database',action="store_true")
 parser.add_argument('--test_db_connection', help='Verify connection to PostgreSQL database',action="store_true")
 parser.add_argument('--drop_tables', help='Drop Tables in the PostgreSQL database',action="store_true")
+parser.add_argument('--create_tables', help='Create Tables in the PostgreSQL database',action="store_true")
 args = parser.parse_args()
 
 """ Read the pg_noko.ini configuration file to get NOKO API parameters and PostgreSQL DB parameters"""
@@ -50,4 +51,9 @@ if args.test_db_connection:
 if args.drop_tables:
     """ Drop Tables """
     pg_noko_db.drop_tables()
+    quit()
+
+if args.create_tables:
+    """ Create Tables """
+    pg_noko_db.create_tables()
     quit()

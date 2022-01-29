@@ -1,2 +1,3 @@
 *.log
 noko_key.txt
+pg_noko.ini
