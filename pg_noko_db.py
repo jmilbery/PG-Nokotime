@@ -4,12 +4,11 @@
 # version ='1.0'
 # Creates/updates PostgreSQL database
 # ---------------------------------------------------------------------------
+
 import psycopg2
+import sys
 import pg_noko_logger
 from configparser import ConfigParser
-
-
-""" Read the pg_noko.ini configuration file to get NOKO API parameters and PostgreSQL DB parameters"""
 
 
 try:
@@ -22,7 +21,7 @@ try:
     ini_port = configur.get('db','port')
     ini_schema = configur.get('db','schema')
 except:
-    pg_noko_logger.log("Missing PostgreSQL INI Settings")
+    pg_noko_logger.log("E","Missing PostgreSQL INI Settings")
     quit()
 
 pg_noko_logger.log("I",'database: '+ini_dbname)
@@ -34,7 +33,9 @@ pg_noko_logger.log("I",'schema: '+ini_schema)
 
 conn = psycopg2.connect(dbname=ini_dbname, user=ini_user, password=ini_password,host=ini_host, port=ini_port)
 
+
 def test_db_connection():
+    """ Test connection to the PosgreSQL database (test out settings in INI before drop/create)"""
     cur = conn.cursor()
     cur.execute("""SELECT user""")
     rows = cur.fetchall()
@@ -43,29 +44,33 @@ def test_db_connection():
     cur.close()
     conn.close()
 
-def drop_tables():
-    sql_drop_noko_raw_entries = "drop table if exists "+ ini_schema+ ".noko_raw_entries cascade"
+def execute_sql(sql_statement, data):
     try:
         conn = psycopg2.connect(dbname=ini_dbname, user=ini_user, password=ini_password,host=ini_host, port=ini_port)
         cur = conn.cursor()
-        cur.execute(sql_drop_noko_raw_entries)
+        cur.execute(sql_statement,data)
         conn.commit()
-        pg_noko_logger.log("I",sql_drop_noko_raw_entries)
+        pg_noko_logger.log("I",sql_statement)
+        pg_noko_logger.log("I",data)
+    except (Exception, psycopg2.DatabaseError) as error:
+        pg_noko_logger.log("E",str(error))
+        sys.exit("ERROR -- Execute_sql failed")
+    finally:
+        cur.close()
+        conn.close()
+
+
+def execute_ddl(sql_statement):
+    try:
+        conn = psycopg2.connect(dbname=ini_dbname, user=ini_user, password=ini_password,host=ini_host, port=ini_port)
+        cur = conn.cursor()
+        cur.execute(sql_statement)
+        conn.commit()
+        pg_noko_logger.log("I",sql_statement)
     except (Exception, psycopg2.DatabaseError) as error:
         pg_noko_logger.log("E",str(error))
     finally:
         cur.close()
         conn.close()
 
-def create_tables():
-    sql_create_noko_raw_entries = """CREATE TABLE postgres.noko.noko_raw_entries (
-	noko_entry_id bigint NOT NULL,
-	noko_user varchar(512),
-	noko_date date,
-	noko_minutes integer,
-	noko_desc varchar(2048),
-	load_date date,
-	PRIMARY KEY (noko_entry_id)
-    );
-    """
-    print (sql_create_noko_raw_entries)
+
