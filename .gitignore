@@ -2,3 +2,4 @@
 noko_key.txt
 pg_noko.ini
 __pycache__/*
+*.pyc
