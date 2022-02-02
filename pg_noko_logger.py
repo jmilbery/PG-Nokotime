@@ -4,12 +4,12 @@
 # version ='1.0'
 # Logger
 # ---------------------------------------------------------------------------
-import logging
-import sys
-logging.basicConfig(format='PG_NOKO_DB:%(process)d-%(levelname)s-%(message)s',stream = sys.stdout, level=logging.INFO)
 
-def log(level, message_string):
-    if level == "E":
-        logging.error(message_string)
+import sys
+import config
+
+def log(level, module, message_string):
+    if config.log_message:
+        print("TYPE:",level, "MODULE:",module, "MESSAGE:", message_string)
     else:
-        logging.info(message_string)
+        return
