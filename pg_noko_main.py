@@ -7,8 +7,6 @@
 import sys
 import argparse
 import pg_noko_api_entries
-import pg_noko_api_tags
-import pg_noko_api_projects
 import pg_noko_logger
 import pg_noko_sql
 import pg_noko_db
@@ -21,16 +19,6 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     '--noko_entries', 
     help='Fetch ENTRIES from Noko API and load them into PostgreSQL database',
-    action="store_true"
-    )
-parser.add_argument(
-    '--noko_tags', 
-    help='Fetch TAGS from Noko API and load them into PostgreSQL database',
-    action="store_true"
-    )
-parser.add_argument(
-    '--noko_projects', 
-    help='Fetch PROJECTS from Noko API and load them into PostgreSQL database',
     action="store_true"
     )
 parser.add_argument(
@@ -63,15 +51,6 @@ if args.noko_entries:
     pg_noko_api_entries.get_entries(config.page_max,config.api_root,config.per_page,config.noko_token)
     sys.exit("SUCCESS:Loaded Noko Entries into PostgreSQL")
 
-if args.noko_tags:
-    """ Get Tags """
-    pg_noko_api_tags.get_tags(config.page_max,config.api_root,config.per_page,config.noko_token)
-    sys.exit("SUCCESS:Loaded Noko Tags into PostgreSQL")
-
-if args.noko_projects:
-    """ Get Projects """
-    pg_noko_api_projects.get_projects(config.page_max,config.api_root,config.per_page,config.noko_token)
-    sys.exit("SUCCESS:Loaded Noko Projects into PostgreSQL")
 
 if args.test_db_connection:
     """ Check DB connection """
