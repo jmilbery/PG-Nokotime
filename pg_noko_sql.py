@@ -1,8 +1,9 @@
 #----------------------------------------------------------------------------
 # Created By  : JFM
 # Created Date: 2020-01-26
-# Creates/format SQL for the PostgreSQL database
+# Creates/formats SQL statements for the PostgreSQL database
 # ---------------------------------------------------------------------------
+""" Creates/formats SQL statements for the PostgreSQL database """
 import sys
 from datetime import datetime
 import pg_noko_db
@@ -35,10 +36,6 @@ def drop_tables():
     # Create drop string for noko_entry_tag and pass to DB
     sql_drop_noko_entry_tag = "drop table if exists " + config.schema + ".noko_entries_tags"
     pg_noko_db.execute_ddl(sql_drop_noko_entry_tag)
-    #
-    # Create drop string for noko_dates
-    sql_drop_noko_dates = "drop table if exists "+ config.schema + ".noko_dates"
-    pg_noko_db.execute_ddl(sql_drop_noko_dates)
 
 #   Create core tables
 #
@@ -86,26 +83,13 @@ def create_tables():
     pg_noko_db.execute_ddl(sql_create_noko_projects)
     #
     # Create production entry/tag table
+    #
     sql_create_noko_entries_tags = "CREATE TABLE " + config.schema + """.noko_entries_tags
     (noko_tag_id int8 NOT NULL,
     noko_entry_id int8 NOT NULL,
     load_date date,
     PRIMARY KEY (noko_tag_id, noko_entry_id))"""
     pg_noko_db.execute_ddl(sql_create_noko_entries_tags)
-    #
-    # Create production datestable
-    sql_create_noko_dates = "CREATE TABLE " + config.schema + """.noko_dates
-    (noko_date date,
-    noko_day_of_week char(3),
-    noko_week_of_year int2,
-    noko_month int,
-    noko_year int4,
-    noko_day_of_month int4,
-    noko_day_of_year int2,
-    noko_quarter char(2),
-    load_date date,
-    primary key (noko_date))"""
-    pg_noko_db.execute_ddl(sql_create_noko_dates)
 
 def truncate_tables():
     """ Truncate (delete all records from a table) """
@@ -119,9 +103,6 @@ def truncate_tables():
     pg_noko_db.execute_ddl(sql_command)
 
     sql_command = "truncate table " + config.schema + ".noko_entries_tags cascade"
-    pg_noko_db.execute_ddl(sql_command)
-
-    sql_command = "truncate table " + config.schema + ".noko_dates cascade"
     pg_noko_db.execute_ddl(sql_command)
 
 def insert_noko_tags(noko_tag_id, noko_tag_name, noko_tag_formatted, noko_tag_billable):
@@ -144,8 +125,16 @@ def insert_noko_entries(noko_entry_id, noko_project_name, noko_user, noko_date, 
     sql_insert = ("insert into "
     + config.schema
     + ".noko_entries (noko_entry_id, noko_project_name, noko_user, noko_date, noko_minutes, noko_desc, load_date)")
+    #
+    # Package the insert variables into a list
+    #    
     sql_insert = sql_insert + " values (%s, %s, %s, %s, %s, %s, %s) on conflict do nothing"
+    #
+    # 
     sql_data = [noko_entry_id, noko_project_name, noko_user, noko_date, noko_minutes, noko_desc, load_date]
+    #
+    # Pass the insert statement and the variables (via a list) to function to execute the DB
+    #
     pg_noko_db.execute_sql(sql_insert, sql_data)
 
 def insert_noko_projects(noko_project_id, noko_project_name, noko_enabled, noko_billable):
@@ -154,7 +143,13 @@ def insert_noko_projects(noko_project_id, noko_project_name, noko_enabled, noko_
     + config.schema
     + ".noko_projects (noko_project_id, noko_project_name, noko_enabled, noko_billable, load_date)")
     sql_insert = sql_insert + " values (%s, %s, %s, %s, %s) on conflict do nothing"
+    #
+    # Package the insert variables into a list
+    #
     sql_data = [noko_project_id, noko_project_name, noko_enabled, noko_billable, load_date]
+    #
+    # Pass the insert statement and the variables (via a list) to function to execute the DB
+    #
     pg_noko_db.execute_sql(sql_insert, sql_data)
 
 def insert_noko_entries_tags(noko_tag_id, noko_entry_id):
@@ -163,7 +158,13 @@ def insert_noko_entries_tags(noko_tag_id, noko_entry_id):
     + config.schema
     + ".noko_entries_tags (noko_entry_id, noko_tag_id, load_date)")
     sql_insert = sql_insert + " values (%s, %s, %s) on conflict do nothing"
+    #
+    # Package the insert variables into a list
+    #
     sql_data = [noko_entry_id, noko_tag_id, load_date]
+    #
+    # Pass the insert statement and the variables (via a list) to function to execute the DB
+    #
     pg_noko_db.execute_sql(sql_insert, sql_data)
 
 def insert_noko_dates(noko_date, noko_day_of_week, noko_week_of_year, noko_month, noko_year, noko_day_of_month, noko_day_of_year, noko_quarter):
