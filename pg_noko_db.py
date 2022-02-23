@@ -20,11 +20,16 @@ import config
 #
 # Create the db connection string from fields in the config.py library
 #
-conn = psycopg2.connect(dbname=config.dbname, user=config.user, 
+
+def connect_db():
+    conn = psycopg2.connect(dbname=config.dbname, user=config.user, 
     password=config.password,host=config.host, port=config.port)
+    return conn
 
+def close_db(conn):
+    conn.close()
 
-def test_db_connection():
+def test_db_connection(conn):
     """ Test connection to the PosgreSQL database (test out settings in INI before drop/create)"""
     #
     # We added this to make it simple to test out the connection to the DB before you
@@ -33,26 +38,19 @@ def test_db_connection():
     # python3 pg_noko_maing.py --test_db_connection
     #
     try:
-        cur = conn.cursor()
-        cur.execute("""SELECT user""")
-        rows = cur.fetchall()
-        for row in rows:
-            print ("   ", row[0])
-        cur.close()
-        conn.close()
+        conn.cursor().execute("""SELECT user""")
     except (Exception, psycopg2.DatabaseError) as error:
         pg_noko_logger.log("E","Test_db_connection",str(error))
-        sys.exit("ERROR -- Execute_sql failed")
+        sys.exit("ERROR -- Execute_sql failed connectint to the db")
 
-def execute_sql(sql_statement, data):
+def execute_sql(conn,sql_statement, data):
     """ Execute a DELETE/UPDATE/INSERT SQL statement"""
     #
     # Pass the SQL string in psycopg2 format and the column data
     # as a python list
     #
     try:
-        cur = conn.cursor()
-        cur.execute(sql_statement,data)
+        conn.cursor().execute(sql_statement,data)
         conn.commit()
         #
         # Very simple logging, we did not bother with the python logging
@@ -79,11 +77,10 @@ def execute_sql(sql_statement, data):
         sys.exit("ERROR -- Execute_sql failed")
 
 
-def execute_ddl(sql_statement):
+def execute_ddl(conn,sql_statement):
     """ Execute a DDL statement -- DROP/CREATE/TRUNCATE"""
     try:
-        cur = conn.cursor()
-        cur.execute(sql_statement)
+        conn.cursor().execute(sql_statement)
         conn.commit()
         #
         # Same logging logic as per the method above

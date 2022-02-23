@@ -18,7 +18,7 @@ import pg_noko_db
 now = datetime.now() 
 load_date = now.strftime("%Y-%m-%d")
 
-def create_noko_dates():
+def create_noko_dates(conn):
     """ Drop and create the noko_dates table """
     #
     # Create drop string for noko_dates table.  We've isolated the drop/create/load
@@ -33,7 +33,7 @@ def create_noko_dates():
     #
     # Call the method in the pg_noko_db library for processing DDLs
     #
-    pg_noko_db.execute_ddl(sql_drop_noko_dates)
+    pg_noko_db.execute_ddl(conn,sql_drop_noko_dates)
     #
     # Create production noko_dates table. PostgreSQL uses "schemas", which we pull from the config.py
     # library
@@ -52,9 +52,9 @@ def create_noko_dates():
     #
     # Call the method in the pg_noko_db library for processing DDLs
     #
-    pg_noko_db.execute_ddl(sql_create_noko_dates)
+    pg_noko_db.execute_ddl(conn,sql_create_noko_dates)
 
-def insert_noko_dates(noko_date, noko_day_of_week, noko_week_of_year, noko_month, 
+def insert_noko_dates(conn,noko_date, noko_day_of_week, noko_week_of_year, noko_month, 
     noko_year, noko_day_of_month, noko_day_of_year, noko_quarter):
     """ Generate insert statment for noko_dates table """
     #
@@ -76,9 +76,9 @@ def insert_noko_dates(noko_date, noko_day_of_week, noko_week_of_year, noko_month
     #
     # Pass the insert statement and the variables (via a list) to function to execute the SQL
     #
-    pg_noko_db.execute_sql(sql_insert, sql_data)
+    pg_noko_db.execute_sql(conn,sql_insert, sql_data)
     #
-def generate_dates():
+def generate_dates(conn):
     """ Generate dates records using a range from config.py"""
     #
     # This method creates the fields for a date record that match the PostgreSQL
@@ -143,5 +143,5 @@ def generate_dates():
         #
         # Pass the date fields to the method that builds the insert statement
         #
-        insert_noko_dates(noko_date, noko_day_of_week, noko_week_of_year, noko_month, noko_year, noko_day_of_month, noko_day_of_year, noko_quarter)
+        insert_noko_dates(conn,noko_date, noko_day_of_week, noko_week_of_year, noko_month, noko_year, noko_day_of_month, noko_day_of_year, noko_quarter)
 

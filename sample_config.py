@@ -8,7 +8,6 @@
 # Noko API settings
 #
 per_page = 100
-page_max = 5000
 api_root = "https://api.nokotime.com/v2/"
 noko_token = "xxxxxxx"
 #

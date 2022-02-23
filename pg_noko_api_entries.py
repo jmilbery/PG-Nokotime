@@ -11,7 +11,7 @@ import pg_noko_sql
 import pg_noko_logger
 
 
-def get_entries(page_max,api_root,per_page,noko_token):
+def get_entries(conn,api_root,per_page,noko_token):
     """ Format and call Noko ENTRIES api call with paging paramters """
 
     # Call the Noko Entries API with four parameters (found in the config.py file)
@@ -21,7 +21,10 @@ def get_entries(page_max,api_root,per_page,noko_token):
     #               total loops over entries (we drop out of the loop when we get
     #               a null entry response anyway)
     try:
-        for page in range(1,page_max):
+        page = 0
+        #for page in range(1,page_max):
+        while True:
+            page = page + 1
             #
             # Create API string from config.sys variables in the [noko] section
             #
@@ -41,14 +44,14 @@ def get_entries(page_max,api_root,per_page,noko_token):
                 # JSON doc is not empty, so pass the results to process_entries
                 # for parsing
                 #
-                process_entries(response)
+                process_entries(conn,response)
     except Exception as e:
         exit_message = "ERROR get_entries " + str(e)
         print(response.text)
         sys.exit(exit_message)
 
 
-def process_entries(response):
+def process_entries(conn,response):
     """ Process the JSON packet that is returned from Noko API call """
     data = response.json()
     #
@@ -135,19 +138,19 @@ def process_entries(response):
                 # worry about duplicates.  Noko provides a unique TAG_ID as a primary key
                 # field, and that's how we match
                 #
-                pg_noko_sql.insert_noko_tags (noko_tag_id, noko_tag_name, noko_tag_formatted, noko_tag_billable)
+                pg_noko_sql.insert_noko_tags (conn,noko_tag_id, noko_tag_name, noko_tag_formatted, noko_tag_billable)
                 #
                 # Noko_tags record is loaded, so now we insert a record in the intersection
                 # table - noko_entries_tags.  This way, each NOKO_ENTRIES record will have zero
                 # or more NOKO_ENTRIES_TAGS records
                 #
-                pg_noko_sql.insert_noko_entries_tags(noko_tag_id, noko_entry_id)
+                pg_noko_sql.insert_noko_entries_tags(conn,noko_tag_id, noko_entry_id)
         
         #
         # Now we store the project record, using the same concept as tags - use the Noko supplied
         # project_id and insert with "on conflict do nothing" SQL variant.
         #
-        pg_noko_sql.insert_noko_projects(noko_project_id, noko_project_name, noko_enabled, noko_billable)
+        pg_noko_sql.insert_noko_projects(conn,noko_project_id, noko_project_name, noko_enabled, noko_billable)
         #
         #
         # Last, but not least -- load the noko_entries record itself.  This is a little sloppy,
@@ -158,6 +161,6 @@ def process_entries(response):
         # happen more often because we have pulled out the TAG data from the description
         #
         noko_desc = noko_desc.strip()
-        pg_noko_sql.insert_noko_entries(noko_entry_id, noko_project_name, noko_user, noko_date, noko_minutes, noko_desc)
+        pg_noko_sql.insert_noko_entries(conn,noko_entry_id, noko_project_name, noko_user, noko_date, noko_minutes, noko_desc)
 
         

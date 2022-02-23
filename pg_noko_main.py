@@ -20,6 +20,9 @@ import pg_noko_dates
 # python3 pg_noko_main.py --help
 #
 
+conn = pg_noko_db.connect_db()
+pg_noko_db.test_db_connection(conn)
+
 # Each main function is set as a parameter for the command line using the python
 # argparse library
 
@@ -83,28 +86,32 @@ args = parser.parse_args()
 #
 if args.noko_entries:
     """ Get Entries """
-    pg_noko_api_entries.get_entries(config.page_max,config.api_root,config.per_page,config.noko_token)
+    pg_noko_api_entries.get_entries(conn,config.api_root,config.per_page,config.noko_token)
+    pg_noko_db.close_db(conn)
     sys.exit("SUCCESS:Loaded Noko Entries into PostgreSQL")
 
 
 if args.test_db_connection:
     """ Check DB connection """
-    pg_noko_db.test_db_connection()
+    pg_noko_db.test_db_connection(conn)
     sys.exit("SUCCESS:Tested Connection from config.py to PostgreSQL")
 
 if args.drop_tables:
     """ Drop Tables """
-    pg_noko_sql.drop_tables()
+    pg_noko_sql.drop_tables(conn)
+    pg_noko_db.test_db_connection(conn)
     sys.exit("SUCCESS:Dropped RAW tables in PostgreSQL")
 
 if args.create_tables:
     """ Create Tables """
-    pg_noko_sql.create_tables()
+    pg_noko_sql.create_tables(conn)
+    pg_noko_db.test_db_connection(conn)
     sys.exit("SUCCESS:Created RAW tables in PostgreSQL")
 
 if args.truncate_tables:
     """ truncate Tables """
-    pg_noko_sql.truncate_tables()
+    pg_noko_sql.truncate_tables(conn)
+    pg_noko_db.test_db_connection(conn)
     sys.exit("SUCCESS:Truncated RAW tables in PostgreSQL")
 
 if args.noko_dates:
@@ -112,11 +119,12 @@ if args.noko_dates:
     #
     # Drop and create table
     #
-    pg_noko_dates.create_noko_dates()
+    pg_noko_dates.create_noko_dates(conn)
     #
     # Load the dates -- stop/start dates defined in config.py
     #
-    pg_noko_dates.generate_dates()
+    pg_noko_dates.generate_dates(conn)
     #
+    pg_noko_db.test_db_connection(conn)
     sys.exit("SUCCESS:Drop/Create/Load Noko_dates in PostgreSQL")
     
