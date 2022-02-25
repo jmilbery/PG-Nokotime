@@ -54,30 +54,6 @@ def create_noko_dates(conn):
     #
     pg_noko_db.execute_ddl(conn,sql_create_noko_dates)
 
-def insert_noko_dates(conn,noko_date, noko_day_of_week, noko_week_of_year, noko_month, 
-    noko_year, noko_day_of_month, noko_day_of_year, noko_quarter):
-    """ Generate insert statment for noko_dates table """
-    #
-    # Build the insert statement for the noko_dates table, using the schema field from the
-    # config.py library.  The format of this string matches the requirements of the psycopg2
-    # library
-    #
-    sql_insert = ("insert into " 
-        + config.schema
-        + ".noko_dates (noko_date, noko_day_of_week, noko_week_of_year, noko_month"
-        + ",noko_year, noko_day_of_month, noko_day_of_year, noko_quarter, load_date)")
-    sql_insert = sql_insert + " values (%s, %s, %s, %s, %s, %s, %s, %s, %s) on conflict do nothing"
-    #
-    # Package the insert variables into a list, which we can pass to the method that executes
-    # the SQL statement.
-    #
-    sql_data = [noko_date, noko_day_of_week, noko_week_of_year, noko_month, 
-        noko_year, noko_day_of_month, noko_day_of_year, noko_quarter,load_date]
-    #
-    # Pass the insert statement and the variables (via a list) to function to execute the SQL
-    #
-    pg_noko_db.execute_sql(conn,sql_insert, sql_data)
-    #
 def generate_dates(conn):
     """ Generate dates records using a range from config.py"""
     #
@@ -98,6 +74,7 @@ def generate_dates(conn):
     # 
     diff = end.date() - start.date()
 
+    noko_dates_list = []
     for date_num in range(diff.days+1):
         #
         # Next date is the start date plus the loop number - starting at "0"
@@ -143,5 +120,13 @@ def generate_dates(conn):
         #
         # Pass the date fields to the method that builds the insert statement
         #
-        insert_noko_dates(conn,noko_date, noko_day_of_week, noko_week_of_year, noko_month, noko_year, noko_day_of_month, noko_day_of_year, noko_quarter)
+        noko_current_date = [noko_date, noko_day_of_week, noko_week_of_year, noko_month, noko_year, noko_day_of_month, noko_day_of_year, noko_quarter,load_date]
+        noko_dates_list.append(noko_current_date)
+    
+    """ SQL Insert string for DATES data.  Insert string is a fixed format """
+    sql_insert = ("insert into " 
+        + config.schema
+        + ".noko_dates (noko_date, noko_day_of_week, noko_week_of_year, noko_month, noko_year, noko_day_of_month, noko_day_of_year, noko_quarter, load_date)")
+    sql_insert = sql_insert + " values (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
+    pg_noko_db.execute_batch_sql(conn,sql_insert, noko_dates_list)
 

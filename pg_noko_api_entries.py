@@ -7,11 +7,18 @@
 import requests
 import sys
 from datetime import datetime
-import pg_noko_sql
+import psycopg2
 import pg_noko_logger
+import pg_noko_db
+import pg_sql_noko_entries_tags
+import pg_sql_noko_entries
+import pg_sql_noko_tags
+import pg_sql_noko_projects
 
+now = datetime.now() 
+load_date = now.strftime("%Y-%m-%d")
 
-def get_entries(conn,api_root,per_page,noko_token):
+def get_entries(api_root,per_page,noko_token):
     """ Format and call Noko ENTRIES api call with paging paramters """
 
     # Call the Noko Entries API with four parameters (found in the config.py file)
@@ -44,14 +51,14 @@ def get_entries(conn,api_root,per_page,noko_token):
                 # JSON doc is not empty, so pass the results to process_entries
                 # for parsing
                 #
-                process_entries(conn,response)
+                process_entries(response)
     except Exception as e:
         exit_message = "ERROR get_entries " + str(e)
         print(response.text)
         sys.exit(exit_message)
 
 
-def process_entries(conn,response):
+def process_entries(response):
     """ Process the JSON packet that is returned from Noko API call """
     data = response.json()
     #
@@ -62,6 +69,13 @@ def process_entries(conn,response):
     # JSON doc.  If you need more elements you can add them here -- and
     # you will need to add them to the PostgreSQL tables and pg_noko_sql as
     # well.
+    #
+    # Set lists.
+    lst_noko_projects =[]
+    lst_noko_tags = []
+    lst_noko_entries = []
+    lst_noko_entries_tags = []
+    #
     for jline in data:
         # record id -- elements at the top of the hierarchy use a single
         # element index
@@ -138,19 +152,22 @@ def process_entries(conn,response):
                 # worry about duplicates.  Noko provides a unique TAG_ID as a primary key
                 # field, and that's how we match
                 #
-                pg_noko_sql.insert_noko_tags (conn,noko_tag_id, noko_tag_name, noko_tag_formatted, noko_tag_billable)
+                tmp_noko_tags = [noko_tag_id, noko_tag_name, noko_tag_formatted, noko_tag_billable,load_date]
+                lst_noko_tags.append(tmp_noko_tags)
                 #
                 # Noko_tags record is loaded, so now we insert a record in the intersection
                 # table - noko_entries_tags.  This way, each NOKO_ENTRIES record will have zero
                 # or more NOKO_ENTRIES_TAGS records
                 #
-                pg_noko_sql.insert_noko_entries_tags(conn,noko_tag_id, noko_entry_id)
+                tmp_noko_entries_tags = [noko_tag_id, noko_entry_id,load_date]
+                lst_noko_entries_tags.append(tmp_noko_entries_tags)
         
         #
         # Now we store the project record, using the same concept as tags - use the Noko supplied
         # project_id and insert with "on conflict do nothing" SQL variant.
         #
-        pg_noko_sql.insert_noko_projects(conn,noko_project_id, noko_project_name, noko_enabled, noko_billable)
+        tmp_noko_projects = [noko_project_id, noko_project_name, noko_enabled, noko_billable,load_date]
+        lst_noko_projects.append(tmp_noko_projects)
         #
         #
         # Last, but not least -- load the noko_entries record itself.  This is a little sloppy,
@@ -161,6 +178,28 @@ def process_entries(conn,response):
         # happen more often because we have pulled out the TAG data from the description
         #
         noko_desc = noko_desc.strip()
-        pg_noko_sql.insert_noko_entries(conn,noko_entry_id, noko_project_name, noko_user, noko_date, noko_minutes, noko_desc)
+        tmp_noko_entries = [noko_entry_id, noko_project_name, noko_user, noko_date, noko_minutes, noko_desc,load_date]
+        lst_noko_entries.append(tmp_noko_entries)
+    #
+    # We have a batch of data, now commit it to the db
+    #
+    try:
+        conn = pg_noko_db.connect_db()
+        pg_noko_db.execute_batch_sql(conn,pg_sql_noko_projects.insert_noko_projects,lst_noko_projects)
+        pg_noko_db.execute_batch_sql(conn,pg_sql_noko_tags.insert_noko_tags,lst_noko_tags)
+        pg_noko_db.execute_batch_sql(conn,pg_sql_noko_entries.insert_noko_entries,lst_noko_entries)
+        pg_noko_db.execute_batch_sql(conn,pg_sql_noko_entries_tags.insert_noko_entries_tags,lst_noko_entries_tags)
+        conn.commit()
+        pg_noko_db.close_db(conn)
+    except (Exception, psycopg2.DatabaseError) as error:
+        #
+        # Log the error if the SQL fails
+        #
+        pg_noko_db.close_db(conn)
+        pg_noko_logger.log("E","EXECUTE_SQL - DROP:",str(error))
+        #
+    # Commit the changes and close the db connection
+ 
+
 
         

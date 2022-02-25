@@ -19,11 +19,7 @@ import pg_noko_dates
 #
 # python3 pg_noko_main.py --help
 #
-
-conn = pg_noko_db.connect_db()
-pg_noko_db.test_db_connection(conn)
-
-# Each main function is set as a parameter for the command line using the python
+# Each function is matched as a parameter for the command line using the python
 # argparse library
 
 parser = argparse.ArgumentParser()
@@ -86,45 +82,42 @@ args = parser.parse_args()
 #
 if args.noko_entries:
     """ Get Entries """
-    pg_noko_api_entries.get_entries(conn,config.api_root,config.per_page,config.noko_token)
-    pg_noko_db.close_db(conn)
+    pg_noko_api_entries.get_entries(config.api_root,config.per_page,config.noko_token)
     sys.exit("SUCCESS:Loaded Noko Entries into PostgreSQL")
-
 
 if args.test_db_connection:
     """ Check DB connection """
-    pg_noko_db.test_db_connection(conn)
+    conn = pg_noko_db.connect_db()
     sys.exit("SUCCESS:Tested Connection from config.py to PostgreSQL")
 
 if args.drop_tables:
     """ Drop Tables """
-    pg_noko_sql.drop_tables(conn)
-    pg_noko_db.test_db_connection(conn)
-    sys.exit("SUCCESS:Dropped RAW tables in PostgreSQL")
+    pg_noko_sql.drop_tables()
+    sys.exit("SUCCESS:Dropped tables in PostgreSQL")
 
 if args.create_tables:
     """ Create Tables """
-    pg_noko_sql.create_tables(conn)
-    pg_noko_db.test_db_connection(conn)
-    sys.exit("SUCCESS:Created RAW tables in PostgreSQL")
+    pg_noko_sql.create_tables()
+    sys.exit("SUCCESS:Created tables in PostgreSQL")
 
 if args.truncate_tables:
     """ truncate Tables """
-    pg_noko_sql.truncate_tables(conn)
-    pg_noko_db.test_db_connection(conn)
-    sys.exit("SUCCESS:Truncated RAW tables in PostgreSQL")
+    pg_noko_sql.truncate_tables()
+    sys.exit("SUCCESS:Truncated tables in PostgreSQL")
 
 if args.noko_dates:
     """ Drop/create noko_dates and load it """
     #
     # Drop and create table
     #
+    conn = pg_noko_db.connect_db()
     pg_noko_dates.create_noko_dates(conn)
+    conn.commit()
     #
     # Load the dates -- stop/start dates defined in config.py
     #
     pg_noko_dates.generate_dates(conn)
+    conn.commit()
     #
-    pg_noko_db.test_db_connection(conn)
     sys.exit("SUCCESS:Drop/Create/Load Noko_dates in PostgreSQL")
     
