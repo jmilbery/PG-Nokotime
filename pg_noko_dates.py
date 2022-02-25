@@ -39,16 +39,17 @@ def create_noko_dates(conn):
     # library
     #
     sql_create_noko_dates = "CREATE TABLE " + config.schema + """.noko_dates
-    (noko_date date,
-    noko_day_of_week char(3),
-    noko_week_of_year int2,
-    noko_month int,
-    noko_year int4,
-    noko_day_of_month int4,
-    noko_day_of_year int2,
-    noko_quarter char(2),
-    load_date date,
-    primary key (noko_date))"""
+    (noko_date            date  NOT NULL  ,
+	noko_day_of_week     char(3)    ,
+	noko_week_of_year    smallint    ,
+	noko_month           integer    ,
+	noko_year            integer    ,
+	noko_day_of_month    integer    ,
+	noko_day_of_year     smallint    ,
+	noko_quarter         char(2)    ,
+	load_date            date    ,
+	CONSTRAINT noko_dates_pkey PRIMARY KEY ( noko_date )
+    );"""
     #
     # Call the method in the pg_noko_db library for processing DDLs
     #

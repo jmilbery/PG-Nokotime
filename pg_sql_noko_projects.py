@@ -14,13 +14,13 @@ import config
 drop_noko_projects = "drop table if exists "+ config.schema + ".noko_projects cascade"
 #
 create_noko_projects = "CREATE TABLE " + config.schema + """.noko_projects
-    (noko_project_id bigint NOT NULL,
-    noko_project_name varchar(128),
-    noko_description varchar(1024),
-    noko_enabled bool,
-    noko_billable bool,
-    load_date date,
-    PRIMARY KEY (noko_project_id))"""
+    (noko_project_id      bigint  NOT NULL  ,
+	noko_project_name    varchar(128)    ,
+	noko_description     varchar(1024)    ,
+	noko_enabled         boolean    ,
+	noko_billable        boolean    ,
+	load_date            date    ,
+	CONSTRAINT noko_projects_pkey PRIMARY KEY ( noko_project_id ));"""
 #
 truncate_noko_projects = "truncate table " + config.schema + ".noko_projects cascade"
 #

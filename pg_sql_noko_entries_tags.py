@@ -14,16 +14,16 @@ import config
 drop_noko_entries_tags = "drop table if exists " + config.schema + ".noko_entries_tags"
 #
 create_noko_entries_tags = "CREATE TABLE " + config.schema + """.noko_entries_tags
-    (noko_tag_id int8 NOT NULL,
-    noko_entry_id int8 NOT NULL,
-    load_date date,
-    PRIMARY KEY (noko_tag_id, noko_entry_id))"""
+    (noko_tag_id          bigint  NOT NULL  ,
+	noko_entry_id        bigint  NOT NULL  ,
+	load_date            date    ,
+	CONSTRAINT noko_entries_tags_pkey PRIMARY KEY ( noko_tag_id, noko_entry_id ));"""
 #
 truncate_noko_entries_tags = "truncate table " + config.schema + ".noko_entries_tags cascade"
 #
 insert_noko_entries_tags = ("insert into "
     + config.schema
-    + ".noko_entries_tags (noko_entry_id, noko_tag_id, load_date)"
+    + ".noko_entries_tags (noko_tag_id, noko_entry_id, load_date)"
     + " values (%s, %s, %s) on conflict do nothing")
 #
 # End of table

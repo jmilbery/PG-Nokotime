@@ -10,6 +10,9 @@ from datetime import datetime
 import psycopg2
 import pg_noko_logger
 import pg_noko_db
+#
+# Each database table has it's own python script with every DDL/DML command defined.
+#
 import pg_sql_noko_entries_tags
 import pg_sql_noko_entries
 import pg_sql_noko_tags

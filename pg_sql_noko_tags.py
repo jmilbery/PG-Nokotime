@@ -14,12 +14,12 @@ import config
 drop_noko_tags = "drop table if exists "+ config.schema+ ".noko_tags cascade"
 #
 create_noko_tags = "CREATE TABLE "+ config.schema + """.noko_tags
-    (noko_tag_id int8 NOT NULL,
-    noko_tag_name varchar(128),
-    noko_tag_formatted varchar(128),
-    noko_tag_billable bool,
-    load_date date,
-    PRIMARY KEY (noko_tag_id))"""
+    (noko_tag_id         bigint  NOT NULL  ,
+	noko_tag_name        varchar(128)    ,
+	noko_tag_formatted   varchar(128)    ,
+	noko_tag_billable    boolean    ,
+	load_date            date    ,
+	CONSTRAINT noko_tags_pkey PRIMARY KEY ( noko_tag_id ));"""
 #
 truncate_noko_tags = "truncate table " + config.schema + ".noko_tags cascade"
 #

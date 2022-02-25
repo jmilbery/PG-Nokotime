@@ -7,7 +7,6 @@
 import sys
 import argparse
 import pg_noko_api_entries
-import pg_noko_logger
 import pg_noko_sql
 import pg_noko_db
 import config
@@ -23,14 +22,6 @@ import pg_noko_dates
 # argparse library
 
 parser = argparse.ArgumentParser()
-#
-# Call the Noko ENTRIES API and fetch entry, project and tag data
-#
-parser.add_argument(
-    '--noko_entries', 
-    help='Fetch ENTRIES from Noko API and load them into PostgreSQL database',
-    action="store_true"
-    )
 #
 # Test the connection to the database, without fetching NOKO API
 # data or updating the database.   
@@ -68,6 +59,22 @@ parser.add_argument(
     action="store_true"
     )
 #
+# Add foreign keys
+#
+parser.add_argument(
+    '--add_foreign_keys', 
+    help='Add foreign keys to PostgreSQL database tables (use after loading all data)',
+    action="store_true"
+    )
+#
+# Call the Noko ENTRIES API and fetch entry, project and tag data
+#
+parser.add_argument(
+    '--noko_api_entries', 
+    help='Fetch ENTRIES from Noko API and load them into PostgreSQL database',
+    action="store_true"
+    )
+#
 # Drop and re-create ONLY the noko_dates table
 #
 parser.add_argument(
@@ -76,11 +83,10 @@ parser.add_argument(
     action="store_true"
     )
 args = parser.parse_args()
-
 #
-# Each entry here matches an argparse argument defined above
+# Each entry here matches an argparse argument list defined above
 #
-if args.noko_entries:
+if args.noko_api_entries:
     """ Get Entries """
     pg_noko_api_entries.get_entries(config.api_root,config.per_page,config.noko_token)
     sys.exit("SUCCESS:Loaded Noko Entries into PostgreSQL")
@@ -88,7 +94,7 @@ if args.noko_entries:
 if args.test_db_connection:
     """ Check DB connection """
     conn = pg_noko_db.connect_db()
-    sys.exit("SUCCESS:Tested Connection from config.py to PostgreSQL")
+    sys.exit("SUCCESS:Tested Connection from config.py to PostgreSQL ["+config.host+"/"+config.dbname+"]")
 
 if args.drop_tables:
     """ Drop Tables """
@@ -104,6 +110,12 @@ if args.truncate_tables:
     """ truncate Tables """
     pg_noko_sql.truncate_tables()
     sys.exit("SUCCESS:Truncated tables in PostgreSQL")
+
+if args.add_foreign_keys:
+    """ add foreign keys to tables  """
+    pg_noko_sql.add_foreign_keys()
+    sys.exit("SUCCESS:Add foreign keys and indexes to tables in PostgreSQL")
+
 
 if args.noko_dates:
     """ Drop/create noko_dates and load it """

@@ -14,15 +14,14 @@ import config
 drop_noko_entries = "drop table if exists "+ config.schema+ ".noko_entries cascade"
 #
 create_noko_entries = "CREATE TABLE "+ config.schema + """.noko_entries (
-noko_entry_id bigint NOT NULL,
-noko_project_name varchar(128),
-noko_user varchar(512),
-noko_date date,
-noko_minutes integer,
-noko_desc varchar(2048),
-load_date date,
-PRIMARY KEY (noko_entry_id)
-);"""
+    noko_entry_id        bigint  NOT NULL  ,
+	noko_project_name    varchar(128)    ,
+	noko_user            varchar(512)    ,
+	noko_date            date    ,
+	noko_minutes         integer    ,
+	noko_desc            varchar(2048)    ,
+	load_date            date    ,
+	CONSTRAINT noko_entries_pkey PRIMARY KEY ( noko_entry_id ));"""
 #
 truncate_noko_entries = "truncate table " + config.schema + ".noko_entries cascade"
 #

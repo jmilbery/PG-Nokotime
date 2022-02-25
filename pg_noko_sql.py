@@ -13,6 +13,7 @@ import pg_sql_noko_entries_tags
 import pg_sql_noko_entries
 import pg_sql_noko_tags
 import pg_sql_noko_projects
+import pg_sql_noko_foreign_keys
 
 
 def create_tables():
@@ -38,6 +39,32 @@ def create_tables():
     conn.commit()
     pg_noko_db.close_db(conn)
     #
+
+def add_foreign_keys():
+    #
+    # Add indexes and foreign keys
+    #
+    try:
+        conn = pg_noko_db.connect_db()
+        pg_noko_db.execute_ddl(conn,pg_sql_noko_foreign_keys.idx_noko_projects_project_name)
+        pg_noko_db.execute_ddl(conn,pg_sql_noko_foreign_keys.idx_noko_entries_noko_date)
+        pg_noko_db.execute_ddl(conn,pg_sql_noko_foreign_keys.fk_noko_entries_noko_projects) 
+        pg_noko_db.execute_ddl(conn,pg_sql_noko_foreign_keys.fk_noko_entries_noko_dates)
+        pg_noko_db.execute_ddl(conn,pg_sql_noko_foreign_keys.fk_noko_entries_tags)
+        pg_noko_db.execute_ddl(conn,pg_sql_noko_foreign_keys.fk_noko_entries_tags_noko_tags)
+    except (Exception, psycopg2.DatabaseError) as error:
+        #
+        # Log the error if the SQL fails
+        #
+        pg_noko_db.close_db(conn)
+        pg_noko_logger.log("E","EXECUTE_SQL - CREATE:",str(error))
+        #
+    # Commit the changes and close the db connection
+    #
+    conn.commit()
+    pg_noko_db.close_db(conn)
+    #
+
 def drop_tables():
     """ Drop the database tables """
     #
