@@ -3,13 +3,18 @@
 # Created Date: 2020-01-25
 # Generates a set of date records for Noko Tables to allow for simpler SQL
 # ---------------------------------------------------------------------------
-""" Generates a set of date records for Noko Tables """
-
+""" Generates a set of date records for Noko Tables 
+    This module has a slightly different format from
+    the other database table code.  All of the logic
+    (including the SQL queries) is stored in-line in this
+    routine -- making it easier to run it standalone
+"""
 from datetime import timedelta
 from datetime import date
 from datetime import datetime
 import config
 import pg_noko_db
+import pg_sql_noko_dates
 
 #
 # Generate a "date stamp in the format YYYY-MM-DD that we'll use for the load_date
@@ -19,63 +24,45 @@ now = datetime.now()
 load_date = now.strftime("%Y-%m-%d")
 
 def create_noko_dates(conn):
-    """ Drop and create the noko_dates table """
-    #
-    # Create drop string for noko_dates table.  We've isolated the drop/create/load
-    # functions into this library so that you can load the dates table independently from
-    # the other noko tables.  (You might want to pull all entries and then decide on the
-    # range for your noko_dates table)
+    """ Drop and create the noko_dates table
+     Create drop/create SQL commands for noko_dates table.  We've isolated the drop/create/load
+     functions into this library so that you can load the dates table independently from
+     the other noko tables.  (You might want to pull all entries and then decide on the
+     range for your noko_dates table).  Noko_dates should be loaded BEFORE you add the
+     foreign keys """
     #
     # Drop the dates table.  PostgreSQL uses "schemas", which we pull from the config.py
     # library
     #
-    sql_drop_noko_dates = "drop table if exists "+ config.schema + ".noko_dates"
-    #
-    # Call the method in the pg_noko_db library for processing DDLs
-    #
-    pg_noko_db.execute_ddl(conn,sql_drop_noko_dates)
+    pg_noko_db.execute_ddl(conn,pg_sql_noko_dates.drop_noko_dates)
     #
     # Create production noko_dates table. PostgreSQL uses "schemas", which we pull from the config.py
     # library
     #
-    sql_create_noko_dates = "CREATE TABLE " + config.schema + """.noko_dates
-    (noko_date            date  NOT NULL  ,
-	noko_day_of_week     char(3)    ,
-	noko_week_of_year    smallint    ,
-	noko_month           integer    ,
-	noko_year            integer    ,
-	noko_day_of_month    integer    ,
-	noko_day_of_year     smallint    ,
-	noko_quarter         char(2)    ,
-	load_date            date    ,
-	CONSTRAINT noko_dates_pkey PRIMARY KEY ( noko_date )
-    );"""
-    #
-    # Call the method in the pg_noko_db library for processing DDLs
-    #
-    pg_noko_db.execute_ddl(conn,sql_create_noko_dates)
+    pg_noko_db.execute_ddl(conn,pg_sql_noko_dates.create_noko_dates)
 
 def generate_dates(conn):
-    """ Generate dates records using a range from config.py"""
-    #
-    # This method creates the fields for a date record that match the PostgreSQL
-    # table fields.  Essentially, we take a date and pull out a variety of elements,
-    # such as day of the week, quarter of the year, etc -- the Noko_entries will join
-    # this table on the noko_date field -- and then you can use the elements of the noko_date
-    # record to extract entries (or group them) by date elements -- for example -- finding
-    # all entries that occur on a "Monday", or in a given quarter.
-    #
-    # Start and end dates are stored in the config.py library
+    """ Generate dates records using a range from config.py
+     This method creates the fields for a date record that match the PostgreSQL
+     table fields.  Essentially, we take a date and pull out a variety of elements,
+     such as day of the week, quarter of the year, etc -- the Noko_entries will join
+     this table on the noko_date field -- and then you can use the elements of the noko_date
+     record to extract entries (or group them) by date elements -- for example -- finding
+     all entries that occur on a "Monday", or in a given quarter. 
+     Start and end dates are stored in the config.py library """
     #
     start = datetime.strptime(config.start_date, "%Y-%m-%d")
     end =   datetime.strptime(config.end_date, "%Y-%m-%d")
     # 
     # Calculate the difference (in days) between the start and end
-    # dates for the loop.
+    # dates in days for the loop length.
     # 
     diff = end.date() - start.date()
-
+    #
+    # Create an empty list to hold the generated dates
+    #
     noko_dates_list = []
+    #
     for date_num in range(diff.days+1):
         #
         # Next date is the start date plus the loop number - starting at "0"
@@ -107,7 +94,7 @@ def generate_dates(conn):
         #
         noko_day_of_year = int(new_date.strftime("%-j"))
         #
-        # Calculate the "quarter" of the calendary year and
+        # Calculate the "quarter" of the calendar year and
         # store as string
         #
         if int(noko_month) <4:
@@ -119,15 +106,15 @@ def generate_dates(conn):
         else:
             noko_quarter = 'Q4'
         #
-        # Pass the date fields to the method that builds the insert statement
+        # Add the current row to the list, creating a list of lists that we can
+        # pass to the DB as a batch
         #
         noko_current_date = [noko_date, noko_day_of_week, noko_week_of_year, noko_month, noko_year, noko_day_of_month, noko_day_of_year, noko_quarter,load_date]
         noko_dates_list.append(noko_current_date)
     
-    """ SQL Insert string for DATES data.  Insert string is a fixed format """
-    sql_insert = ("insert into " 
-        + config.schema
-        + ".noko_dates (noko_date, noko_day_of_week, noko_week_of_year, noko_month, noko_year, noko_day_of_month, noko_day_of_year, noko_quarter, load_date)")
-    sql_insert = sql_insert + " values (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
-    pg_noko_db.execute_batch_sql(conn,sql_insert, noko_dates_list)
+    # End of loop creating the dates list of lists.
+    # pass the connection, insert statement string and list to the pg_noko_db for executing
+    # against the db
+    #
+    pg_noko_db.execute_batch_sql(conn,pg_sql_noko_dates.insert_noko_dates, noko_dates_list)
 

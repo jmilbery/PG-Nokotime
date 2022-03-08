@@ -1,9 +1,10 @@
 #----------------------------------------------------------------------------
 # Created By  : JFM
 # Created Date: 2020-01-26
-# Creates/formats SQL statements for the PostgreSQL database
+# Coordinator routine for running DDL in PostgreSQL database
 # ---------------------------------------------------------------------------
-""" Creates/formats SQL statements for the PostgreSQL database """
+""" Coordinator routine for running DDL in PostgreSQL database.  The SQL
+    strings for each table are stored in the table-specific .py files """
 import sys
 from datetime import datetime
 import psycopg2
@@ -17,7 +18,9 @@ import pg_sql_noko_foreign_keys
 
 
 def create_tables():
-    """ Create the database tables """
+    """ Create the database tables using the individual pg_sql_*.py files
+        one for each table. All SQL (drop/create/truncate/insert) statements
+        are stored in this way -- one central place for all SQL """
     #
     # Create the tables
     #

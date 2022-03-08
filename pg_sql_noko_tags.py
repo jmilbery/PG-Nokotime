@@ -3,7 +3,7 @@
 # Created Date: 2020-01-26
 # Stores SQL statements for the Table: noko_tags
 # ---------------------------------------------------------------------------
-""" Creates/formats SQL statements for the PostgreSQL database """
+""" Creates/formats SQL statements for the noko_tags table """
 import sys
 from datetime import datetime
 import config

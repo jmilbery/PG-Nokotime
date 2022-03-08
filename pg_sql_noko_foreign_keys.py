@@ -1,9 +1,9 @@
 #----------------------------------------------------------------------------
 # Created By  : JFM
 # Created Date: 2020-01-26
-# Stores SQL statements for the Table: noko_entries
+# Stores SQL statements adding foreign keys to the tables 
 # ---------------------------------------------------------------------------
-""" Creates/formats SQL statements for the PostgreSQL database """
+""" Creates/formats SQL statements for adding foreign keys to tables - after loading them"""
 import sys
 from datetime import datetime
 import config

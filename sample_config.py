@@ -23,6 +23,7 @@ schema="noko"
 # Set variable for outputting messages to stdout
 #
 log_message=True
+log_sql=True
 #
 # Start/End dates for noko_dates table
 #
