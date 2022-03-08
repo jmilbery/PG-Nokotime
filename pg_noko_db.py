@@ -148,7 +148,6 @@ def execute_ddl(conn,sql_statement):
         #
         conn.cursor().execute(sql_statement)
         conn.commit()
-        pg_noko_logger.log("I","EXECUTE_DDL",sql_statement)
         #
     except (Exception, psycopg2.DatabaseError) as error:
         #
