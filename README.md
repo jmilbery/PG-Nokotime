@@ -51,18 +51,27 @@ usage: pg_noko_main.py [-h] [--test_db_connection] [--drop_tables]
 
 optional arguments:
   -h, --help            show this help message and exit
+
   --test_db_connection  Verify connection to PostgreSQL database
+
   --drop_tables         Drop Tables in the PostgreSQL database
+
   --create_tables       Create Tables in the PostgreSQL database
+
   --truncate_tables     Truncate Noko Tables in the PostgreSQL database
+
   --noko_api_entries    Fetch ENTRIES from Noko API and load them into
                         PostgreSQL database
+
   --noko_dates          Drop/Create Noko_dates table in the PostgreSQL
                         database and load it
+
   --add_foreign_keys    Add foreign keys to PostgreSQL database tables (use
                         after loading all data)
+
   --all                 Run all functions in order: Drop>Create>Load>Dates>Add
                         Foreign Keys
+
 
 
 

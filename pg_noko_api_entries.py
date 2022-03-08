@@ -78,6 +78,8 @@ def process_entries(response):
     # well.
     """
     data = response.json()
+    pg_noko_logger.log("API", "PROCESS_ENTRIES", "Processing API Entries ..."+str(len(data)))
+
     #
     # Set lists to empty - one for each table
     #
