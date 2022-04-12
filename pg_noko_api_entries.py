@@ -63,7 +63,6 @@ def get_entries(api_root,per_page,noko_token):
                 process_entries(response)
     except Exception as e:
         exit_message = "ERROR get_entries " + str(e)
-        print(response.text)
         sys.exit(exit_message)
 
 
